@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Node {
+  name               String      @unique                  // Name of the Node
+  createdAt          DateTime    @default(now())          // Datetime Node was added to DB
+  updatedAt          DateTime    @updatedAt               // Last Updated Time
+  status             String      @default("Initializing") // Status of the Node: Initializing, Syncing, Idle
+  active             Boolean                              // Is the Node Active
+  hostIp             String                               // IP Address of the Node
+  containerIp        String      @default("")             // Container IP
+  containerStatus    String                               // Status of the Container
+  version            String                               // Version of the Node
+  containerStartedAt DateTime                             // Container Started Time
+  farmers            Farmer[]
+  events             NodeEvent[]
+  claims             Claim[]
+  consensus          Consensus[]
+  errors             NodeError[]
+}
+
+model Farmer {
+  name          String        @unique // Name of the Farm
+  createdAt     DateTime      @default(now()) // Datetime Farm was added to DB
+  updatedAt     DateTime      @updatedAt
+  active        Boolean // Is the Farmer active?
+  workers       Int?
+  pieceCachePct Float? // Piece Cache Sync Percent Complete
+  nodeIp        String? // IP Address of the Connected Node
+  containerIp   String? // IP Address of the Farmer
+  node          Node          @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
+  nodeName      String
+  farms         Farm[] // Farms associated with the farmer
+  events        FarmerEvent[] // Events associated with the farmer
+  errors        FarmerError[] // Errors associated with the farmer
+}
+
+model Farm {
+  id             String   @unique
+  createdAt      DateTime @default(now()) // Datetime Node was added to DB
+  updatedAt      DateTime @updatedAt
+  farmer         Farmer   @relation(fields: [farmerName], references: [name])
+  farmerName     String // Associated ID for Farmer
+  index          Int // Index of Farm
+  publicKey      String? // Public Key of farm
+  allocatedSpace Float? // Space in GiB allocated
+  directory      String? // Directory for drive
+  status         String? // Initializing, Plotting, Replotting
+  plots          Plot[]
+  rewards        Reward[]
+}
+
+model NodeEvent {
+  id            Int      @id @default(autoincrement())
+  eventDatetime DateTime
+  node          Node     @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
+  nodeName      String
+  type          String
+  data          String
+}
+
+model FarmerEvent {
+  id            Int      @id @default(autoincrement())
+  eventDatetime DateTime
+  farmer        Farmer   @relation(fields: [farmerName], references: [name])
+  farmerName    String // Associated ID for Farmer
+  type          String
+  data          String
+}
+
+model Plot {
+  id              Int      @id @default(autoincrement())
+  plotDatetime    DateTime
+  farm            Farm     @relation(fields: [farmId], references: [id])
+  farmId          String
+  percentComplete Float
+  currentSector   Int
+  type            String
+}
+
+model Reward {
+  id             Int      @id @default(autoincrement())
+  rewardDatetime DateTime
+  farm           Farm     @relation(fields: [farmId], references: [id])
+  farmId         String
+  hash           String
+  success        Boolean
+}
+
+model Claim {
+  id            Int      @id @default(autoincrement())
+  claimDatetime DateTime
+  node          Node     @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
+  nodeName      String
+  slot          Int
+  type          String
+}
+
+model Consensus {
+  id                Int      @id @default(autoincrement())
+  consensusDatetime DateTime
+  node              Node     @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
+  nodeName          String
+  type              String @default("")
+  peers             Int
+  best              Int
+  target            Int
+  finalized         Int
+  bps               Int
+  downSpeed         Float
+  upSpeed           Float
+}
+
+model FarmerError {
+  id            Int      @id @default(autoincrement())
+  errorDatetime DateTime
+  farmer        Farmer   @relation(fields: [farmerName], references: [name])
+  farmerName    String // Associated ID for Farmer
+  message       String
+}
+
+model NodeError {
+  id            Int      @id @default(autoincrement())
+  errorDatetime DateTime
+  node          Node     @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
+  nodeName      String
+  message       String
+}
