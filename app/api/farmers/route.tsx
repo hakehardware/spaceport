@@ -3,18 +3,18 @@ import prisma from "@/prisma/client";
 import {createSchema} from "./schema";
 
 export async function GET(request: NextRequest) {
-    const nodes = await prisma.node.findMany()
+    const nodes = await prisma.farmer.findMany()
     return NextResponse.json(nodes)
 }
 
 export async function POST(request: NextRequest) {
     const body = await request.json()
     const validation = createSchema.safeParse(body)
-    console.log(body)
+
     if (!validation.success)
         return NextResponse.json(validation.error.errors , { status: 400 });
 
-    const node = await prisma.node.findUnique({
+    const node = await prisma.farmer.findUnique({
         where: {
             name: body.name
         }
@@ -23,14 +23,15 @@ export async function POST(request: NextRequest) {
     if (node)
         return NextResponse.json({error: 'Node already exists'}, {status: 400})
 
-    const newNode = await prisma.node.create({
+    const newNode = await prisma.farmer.create({
         data: {
             name: body.name,
-            status: body.status,
             active: body.active,
-            hostIp: body.hostIp,
+            workers: body.workers,
+            pieceCachePct: body.pieceCachePct,
+            nodeIp: body.nodeIp,
             containerIp: body.containerIp,
-            containerStatus: body.containerStatus,
+            nodeName: body.nodeName,
             version: body.version,
             containerStartedAt: body.containerStartedAt
         }

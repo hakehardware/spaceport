@@ -21,7 +21,6 @@ model Node {
   containerStatus    String                               // Status of the Container
   version            String                               // Version of the Node
   containerStartedAt DateTime                             // Container Started Time
-  farmers            Farmer[]
   events             NodeEvent[]
   claims             Claim[]
   consensus          Consensus[]
@@ -37,8 +36,9 @@ model Farmer {
   pieceCachePct Float? // Piece Cache Sync Percent Complete
   nodeIp        String? // IP Address of the Connected Node
   containerIp   String? // IP Address of the Farmer
-  node          Node          @relation(fields: [nodeName], references: [name]) // Node the Farmer is connected to
-  nodeName      String
+  version            String                               // Version of the Node
+  containerStartedAt DateTime                             // Container Started Time
+  nodeName  String? @default("")
   farms         Farm[] // Farms associated with the farmer
   events        FarmerEvent[] // Events associated with the farmer
   errors        FarmerError[] // Errors associated with the farmer

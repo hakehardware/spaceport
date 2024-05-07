@@ -4,7 +4,7 @@ import { createSchema } from "./schema";
 import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
-  const events = await prisma.nodeEvent.findMany();
+  const events = await prisma.farmerEvent.findMany();
   return NextResponse.json(events);
 }
 
@@ -16,28 +16,28 @@ export async function POST(request: NextRequest) {
     if (!validation.success)
       return NextResponse.json(validation.error.errors, { status: 400 });
 
-    const nodeEvent = await prisma.nodeEvent.findFirst({
+    const farmerEvent = await prisma.farmerEvent.findFirst({
       where: {
         eventDatetime: body.eventDatetime,
-        nodeName: body.nodeName,
+        farmerName: body.farmerName,
         type: body.type,
         data: body.data,
       },
     });
 
-    if (nodeEvent)
-      return NextResponse.json({ message: "Node Event already exists" }, {status: 200});
+    if (farmerEvent)
+      return NextResponse.json({ message: "Farmer Event already exists" }, {status: 200});
 
-    const newNodeEvent = await prisma.nodeEvent.create({
+    const newFarmerEvent = await prisma.farmerEvent.create({
       data: {
         eventDatetime: body.eventDatetime,
-        nodeName: body.nodeName,
+        farmerName: body.farmerName,
         type: body.type,
         data: body.data,
       },
     });
 
-    return NextResponse.json(newNodeEvent, { status: 201 });
+    return NextResponse.json(newFarmerEvent, { status: 201 });
 
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
